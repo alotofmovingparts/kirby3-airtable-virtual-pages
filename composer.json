@@ -1,0 +1,25 @@
+{
+  "name": "alomp/kirby3-airtable-virtual-pages",
+  "description": "Create Kirby 3 virtual pages from Airtable tables",
+  "version": "0.1.0",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Seth Thompson",
+      "email": "s3th.thompson@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.2.0",
+    "getkirby/composer-installer": "^1.1",
+    "guym4c/airtable-client": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ALOMP\\Airtable\\": "src/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
+}

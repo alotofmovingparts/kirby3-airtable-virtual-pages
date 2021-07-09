@@ -1,6 +1,7 @@
 {
   "name": "alomp/kirby3-airtable-virtual-pages",
   "description": "Create Kirby 3 virtual pages from Airtable tables",
+  "type": "kirby-plugin",
   "version": "0.1.0",
   "license": "MIT",
   "authors": [

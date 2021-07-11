@@ -56,12 +56,12 @@ abstract class VirtualPage extends Page
         return $slug;
     }
 
-    public function getResultsCacheKey()
+    private function getResultsCacheKey()
     {
         return $this->baseId . '-' . $this->table;
     }
 
-    public function getResultCacheKey($key)
+    private function getResultCacheKey($key)
     {
         return $this->baseId . '-' . $this->table . '-' . $key;
     }

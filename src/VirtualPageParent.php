@@ -46,12 +46,12 @@ abstract class VirtualPageParent extends Page
         parent::__construct($props);
     }
 
-    public function getResultsCacheKey()
+    private function getResultsCacheKey()
     {
         return $this->baseId . '-' . $this->table;
     }
 
-    public function getResultCacheKey($key)
+    private function getResultCacheKey($key)
     {
         return $this->baseId . '-' . $this->table . '-' . $key;
     }
@@ -59,6 +59,21 @@ abstract class VirtualPageParent extends Page
     public function fetchCachedResults()
     {
         return $this->cache->get($this->getResultsCacheKey());
+    }
+
+    public function fetchCachedResult($id)
+    {
+        if ($result = $this->cache->get($this->getResultCacheKey($id))) {
+            return $result;
+        }
+        if ($results = $this->fetchCachedResults()) {
+            foreach ($results as $i => $result) {
+                if ($result['id'] === $id) {
+                    return $result;
+                }
+            }
+        }
+        return null;
     }
 
     public function fetchRemoteResults()
@@ -88,12 +103,40 @@ abstract class VirtualPageParent extends Page
         return $results;
     }
 
+    public function fetchRemoteResult($id)
+    {
+        try {
+            $record = $this->airtable->get($this->table, $id);
+            $result = [
+                'table' => $record->getTable(),
+                'id' => $record->getId(),
+                'fields' => $record->getData(),
+                'createdTime' => $record->getTimestamp()->format('c'),
+            ];
+            $class = $this->getChildClass();
+            $config = $class::getConfig();
+            $minutes = $config['minutes'] ?? 0;
+            $this->cache->set($this->getResultCacheKey($id), $result, $minutes);
+            return $result;
+        } catch (\Guym4c\Airtable\AirtableApiException $e) {
+            return null;
+        }
+    }
+
     public function fetchResults()
     {
         if ($results = $this->fetchCachedResults()) {
             return $results;
         }
         return $this->fetchRemoteResults();
+    }
+
+    public function fetchResult($id)
+    {
+        if ($result = $this->fetchCachedResult($id)) {
+            return $result;
+        }
+        return $this->fetchRemoteResult($id);
     }
 
     public function getChildClass()
@@ -143,49 +186,6 @@ abstract class VirtualPageParent extends Page
             $pages[] = $this->resultToPageProps($result, $class);
         }
         return Pages::factory($pages, $this);
-    }
-
-    public function fetchCachedResult($id)
-    {
-        if ($result = $this->cache->get($this->getResultCacheKey($id))) {
-            return $result;
-        }
-        if ($results = $this->fetchCachedResults()) {
-            foreach ($results as $i => $result) {
-                if ($result['id'] === $id) {
-                    return $result;
-                }
-            }
-        }
-        return null;
-    }
-
-    public function fetchRemoteResult($id)
-    {
-        try {
-            $record = $this->airtable->get($this->table, $id);
-            $result = [
-                'table' => $record->getTable(),
-                'id' => $record->getId(),
-                'fields' => $record->getData(),
-                'createdTime' => $record->getTimestamp()->format('c'),
-            ];
-            $class = $this->getChildClass();
-            $config = $class::getConfig();
-            $minutes = $config['minutes'] ?? 0;
-            $this->cache->set($this->getResultCacheKey($id), $result, $minutes);
-            return $result;
-        } catch (\Guym4c\Airtable\AirtableApiException $e) {
-            return null;
-        }
-    }
-
-    public function fetchResult($id)
-    {
-        if ($result = $this->fetchCachedResult($id)) {
-            return $result;
-        }
-        return $this->fetchRemoteResult($id);
     }
 
     public function get($key)

@@ -41,6 +41,11 @@ class Record
         return $value;
     }
 
+    static function toSelect(string|null $value): string|null
+    {
+        return $value;
+    }
+
     static function toPages(
         \Guym4c\Airtable\Loader|array|null $value,
         string|null $parent = null,

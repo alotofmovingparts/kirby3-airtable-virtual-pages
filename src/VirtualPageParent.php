@@ -14,6 +14,7 @@ abstract class VirtualPageParent extends Page
     public string|null $baseId;
     public string $table;
     public string $child;
+    public string|null $filterByFormula;
     public int $minutes;
 
     protected $airtable;
@@ -36,6 +37,7 @@ abstract class VirtualPageParent extends Page
 
         $this->table = $config['table'];
         $this->child = $config['child'];
+        $this->filterByFormula = $config['filterByFormula'] ?? null;
         $this->minutes = $config['minutes'] ?? 0;
 
         $this->airtable = new \Guym4c\Airtable\Airtable(
@@ -48,7 +50,10 @@ abstract class VirtualPageParent extends Page
 
     private function getResultsCacheKey()
     {
-        return $this->baseId . '-' . $this->table;
+        $table = $this->baseId . '-' . $this->table;
+        return $this->filterByFormula
+            ? $table . '-' . md5($this->filterByFormula)
+            : $table;
     }
 
     private function getResultCacheKey($key)
@@ -79,7 +84,12 @@ abstract class VirtualPageParent extends Page
     public function fetchRemoteResults()
     {
         $records = [];
-        $request = $this->airtable->list($this->table);
+        $filter = null;
+        if ($this->filterByFormula) {
+            $filter = new \Guym4c\Airtable\ListFilter();
+            $filter->setFormula($this->filterByFormula);
+        }
+        $request = $this->airtable->list($this->table, $filter);
 
         do {
             $records = array_merge($records, $request->getRecords());

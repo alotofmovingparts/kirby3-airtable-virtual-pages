@@ -42,6 +42,11 @@ class Field
         return $value;
     }
 
+    static function toSingleSelect(string|null $value): string|null
+    {
+        return $value;
+    }
+
     static function toLinkedRecords(
         string|null $value,
         Closure $deslugify = null,

@@ -56,11 +56,6 @@ abstract class VirtualPage extends Page
         return $slug;
     }
 
-    public function getResultsCacheKey()
-    {
-        return $this->baseId . '-' . $this->table;
-    }
-
     public function getResultCacheKey($key)
     {
         return $this->baseId . '-' . $this->table . '-' . $key;
@@ -85,7 +80,18 @@ abstract class VirtualPage extends Page
                 $this->setSlug($this::slugify($record));
             }
             $this->cache->remove($this->getResultCacheKey($record->getId()));
-            $this->cache->remove($this->getResultsCacheKey());
+            $parent = $this->parent();
+            while ($parent) {
+                if (
+                    in_array(
+                        'ALOMP\Airtable\VirtualPageParent',
+                        class_parents($parent),
+                    )
+                ) {
+                    $parent->flush();
+                }
+                $parent = $parent->parent();
+            }
         }
         return true;
     }

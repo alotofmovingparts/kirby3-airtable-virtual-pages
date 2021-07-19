@@ -160,6 +160,11 @@ abstract class VirtualPageParent extends Page
         return $class;
     }
 
+    public function flush()
+    {
+        $this->cache->remove($this->getResultsCacheKey());
+    }
+
     public function resultToPageProps($result, $class)
     {
         $table = $result['table'];

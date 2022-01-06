@@ -15,7 +15,7 @@ abstract class VirtualPageParent extends Page
     public string $table;
     public string $child;
     public string|null $filterByFormula;
-    public int $minutes;
+    public int|null $minutes;
 
     protected $airtable;
     protected $cache;
@@ -38,7 +38,7 @@ abstract class VirtualPageParent extends Page
         $this->table = $config['table'];
         $this->child = $config['child'];
         $this->filterByFormula = $config['filterByFormula'] ?? null;
-        $this->minutes = $config['minutes'] ?? 0;
+        $this->minutes = $config['minutes'];
 
         $this->airtable = new \Guym4c\Airtable\Airtable(
             $this->apiKey,
@@ -105,11 +105,13 @@ abstract class VirtualPageParent extends Page
                 'createdTime' => $record->getTimestamp()->format('c'),
             ];
         }
-        $this->cache->set(
-            $this->getResultsCacheKey(),
-            $results,
-            $this->minutes,
-        );
+        if (!is_null($this->minutes)) {
+            $this->cache->set(
+                $this->getResultsCacheKey(),
+                $results,
+                $this->minutes,
+            );
+        }
         return $results;
     }
 
@@ -125,8 +127,14 @@ abstract class VirtualPageParent extends Page
             ];
             $class = $this->getChildClass();
             $config = $class::getConfig();
-            $minutes = $config['minutes'] ?? 0;
-            $this->cache->set($this->getResultCacheKey($id), $result, $minutes);
+            $minutes = $config['minutes'];
+            if (!is_null($minutes)) {
+                $this->cache->set(
+                    $this->getResultCacheKey($id),
+                    $result,
+                    $minutes,
+                );
+            }
             return $result;
         } catch (\Guym4c\Airtable\AirtableApiException $e) {
             return null;
@@ -135,7 +143,10 @@ abstract class VirtualPageParent extends Page
 
     public function fetchResults()
     {
-        if ($results = $this->fetchCachedResults()) {
+        if (
+            !is_null($this->minutes) &&
+            ($results = $this->fetchCachedResults())
+        ) {
             return $results;
         }
         return $this->fetchRemoteResults();
@@ -143,7 +154,10 @@ abstract class VirtualPageParent extends Page
 
     public function fetchResult($id)
     {
-        if ($result = $this->fetchCachedResult($id)) {
+        $class = $this->getChildClass();
+        $config = $class::getConfig();
+        $minutes = $config['minutes'];
+        if (!is_null($minutes) && ($result = $this->fetchCachedResult($id))) {
             return $result;
         }
         return $this->fetchRemoteResult($id);

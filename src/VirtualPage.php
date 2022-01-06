@@ -36,7 +36,7 @@ abstract class VirtualPage extends Page
         }
 
         $this->table = $config['table'];
-        $this->minutes = $config['minutes'];
+        $this->minutes = $config['minutes'] ?? null;
 
         $this->airtable = new \Guym4c\Airtable\Airtable(
             $this->apiKey,

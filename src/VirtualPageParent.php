@@ -38,7 +38,7 @@ abstract class VirtualPageParent extends Page
         $this->table = $config['table'];
         $this->child = $config['child'];
         $this->filterByFormula = $config['filterByFormula'] ?? null;
-        $this->minutes = $config['minutes'];
+        $this->minutes = $config['minutes'] ?? null;
 
         $this->airtable = new \Guym4c\Airtable\Airtable(
             $this->apiKey,
@@ -127,7 +127,7 @@ abstract class VirtualPageParent extends Page
             ];
             $class = $this->getChildClass();
             $config = $class::getConfig();
-            $minutes = $config['minutes'];
+            $minutes = $config['minutes'] ?? null;
             if (!is_null($minutes)) {
                 $this->cache->set(
                     $this->getResultCacheKey($id),
@@ -156,7 +156,7 @@ abstract class VirtualPageParent extends Page
     {
         $class = $this->getChildClass();
         $config = $class::getConfig();
-        $minutes = $config['minutes'];
+        $minutes = $config['minutes'] ?? null;
         if (!is_null($minutes) && ($result = $this->fetchCachedResult($id))) {
             return $result;
         }
